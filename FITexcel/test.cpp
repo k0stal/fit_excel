@@ -32,7 +32,10 @@
 #include <charconv>
 #include <span>
 #include <utility>
+
 #include "expression.h"
+#include "position.h"
+
 using namespace std::literals;
 using CValue = std::variant<std::monostate, double, std::string>;
 
@@ -42,14 +45,6 @@ constexpr unsigned                     SPREADSHEET_FILE_IO                     =
 constexpr unsigned                     SPREADSHEET_SPEED                       = 0x08;
 constexpr unsigned                     SPREADSHEET_PARSER                      = 0x10;
 #endif /* __PROGTEST__ */
-
-class CPos
-{
-  public:
-                                       CPos                                    ( std::string_view                      str );
-  private:
-    // todo
-};
 
 class CSpreadsheet
 {
