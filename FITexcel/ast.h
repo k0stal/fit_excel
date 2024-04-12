@@ -173,6 +173,60 @@ class ASTRange : public ASTNode {
 
 // FUNCTION
 
-// probably another set of classes for each possible function
+class ASTRangeFunction : public ASTNode {
+    public:
+        ASTRangeFunction ( std::unique_ptr<ASTRange> range );
+        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;
+        void printRangeFunction ( std::ostream & os, const std::string & func ) const;
+    protected:
+        std::unique_ptr<ASTRange> range;
+};
+
+class ASTSum : public ASTRangeFunction {
+    public:
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;
+};
+
+class ASTCount : public ASTRangeFunction {
+    public:
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;    
+};
+
+class ASTMin : public ASTRangeFunction {
+    public:
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;    
+};
+
+class ASTMax : public ASTRangeFunction {
+    public:
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;    
+};
+
+class ASTCountVal : public ASTNode {
+    public:
+        ASTCountVal( std::unique_ptr<ASTNode> val, std::unique_ptr<ASTRange> range );
+        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;  
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;
+    private:
+        std::unique_ptr<ASTNode> val;
+        std::unique_ptr<ASTRange> range;
+};
+
+class ASTIf : public ASTNode {
+    public:
+        ASTIf( std::unique_ptr<ASTNode> cond, std::unique_ptr<ASTNode> ifTrue, std::unique_ptr<ASTNode> ifFalse );
+        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;  
+        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
+        void print ( std::ostream & os ) const override;
+    private:
+        std::unique_ptr<ASTNode> cond;
+        std::unique_ptr<ASTNode> ifTrue;
+        std::unique_ptr<ASTNode> ifFalse;
+};
 
 #endif // AST_H
