@@ -33,39 +33,12 @@
 #include <span>
 #include <utility>
 
-#include "expression.h"
 #include "position.h"
+#include "spreadsheet.h"
+#include "value.h"
 
-using namespace std::literals;
-using CValue = std::variant<std::monostate, double, std::string>;
-
-constexpr unsigned                     SPREADSHEET_CYCLIC_DEPS                 = 0x01;
-constexpr unsigned                     SPREADSHEET_FUNCTIONS                   = 0x02;
-constexpr unsigned                     SPREADSHEET_FILE_IO                     = 0x04;
-constexpr unsigned                     SPREADSHEET_SPEED                       = 0x08;
-constexpr unsigned                     SPREADSHEET_PARSER                      = 0x10;
 #endif /* __PROGTEST__ */
 
-class CSpreadsheet
-{
-  public:
-    static unsigned                    capabilities                            ()
-    {
-      return SPREADSHEET_CYCLIC_DEPS | SPREADSHEET_FUNCTIONS | SPREADSHEET_FILE_IO | SPREADSHEET_SPEED | SPREADSHEET_PARSER;
-    }
-                                       CSpreadsheet                            ();
-    bool                               load                                    ( std::istream                        & is );
-    bool                               save                                    ( std::ostream                        & os ) const;
-    bool                               setCell                                 ( CPos                                  pos,
-                                                                                 std::string                           contents );
-    CValue                             getValue                                ( CPos                                  pos );
-    void                               copyRect                                ( CPos                                  dst,
-                                                                                 CPos                                  src,
-                                                                                 int                                   w = 1,
-                                                                                 int                                   h = 1 );
-  private:
-    // todo
-};
 
 #ifndef __PROGTEST__
 
@@ -218,6 +191,69 @@ int main ()
   assert ( valueMatch ( x0 . getValue ( CPos ( "H12" ) ), CValue ( 25.0 ) ) );
   assert ( valueMatch ( x0 . getValue ( CPos ( "H13" ) ), CValue ( -22.0 ) ) );
   assert ( valueMatch ( x0 . getValue ( CPos ( "H14" ) ), CValue ( -22.0 ) ) );
+
+  // cyclic detection
+
+  CSpreadsheet x2;
+  assert ( x2 . setCell ( CPos ( "A1" ), "=B1" ) );
+  assert ( x2 . setCell ( CPos ( "B1" ), "=C1" ) );
+  assert ( x2 . setCell ( CPos ( "C1" ), "=A1" ) );
+  assert ( valueMatch ( x2 . getValue ( CPos ( "A1" ) ), CValue() ) );
+  assert ( valueMatch ( x2 . getValue ( CPos ( "B1" ) ), CValue() ) );
+  assert ( valueMatch ( x2 . getValue ( CPos ( "C1" ) ), CValue() ) );
+
+  CSpreadsheet x3;
+  assert ( x3 . setCell ( CPos ( "A1" ), "=B1+C1+D1" ) );
+  assert ( x3 . setCell ( CPos ( "C1" ), "=E1+F1" ) );
+  assert ( x3 . setCell ( CPos ( "D1" ), "=G1+H1" ) );
+  assert ( x3 . setCell ( CPos ( "F1" ), "=X1" ) );
+  assert ( x3 . setCell ( CPos ( "X1" ), "=A1" ) );
+  assert ( valueMatch ( x3 . getValue ( CPos ( "A1" ) ), CValue() ) );
+
+  CSpreadsheet x4;
+  assert ( x4 . setCell ( CPos ( "A1" ), "=B1+C1+D1+E1+F1+G1+H1" ) );
+  assert ( x4 . setCell ( CPos ( "C1" ), "=I1+J1" ) );
+  assert ( x4 . setCell ( CPos ( "I1" ), "=K1+M1" ) );
+  assert ( x4 . setCell ( CPos ( "M1" ), "=N1" ) );
+  assert ( x4 . setCell ( CPos ( "N1" ), "=M1" ) );
+  assert ( valueMatch ( x4 . getValue ( CPos ( "A1" ) ), CValue() ) );
+
+  // deep copy testing
+
+  CSpreadsheet x5;
+  assert ( x5 . setCell ( CPos ( "A1" ), "=B1+C1" ) );
+  assert ( x5 . setCell ( CPos ( "B1" ), "50" ) );
+  assert ( x5 . setCell ( CPos ( "C1" ), "100" ) );
+  assert ( x5 . setCell ( CPos ( "D1" ), "=E1+F1" ) );
+  assert ( x5 . setCell ( CPos ( "E1" ), "20" ) );
+  assert ( x5 . setCell ( CPos ( "F1" ), "=G5+H5+I5" ) );
+  assert ( x5 . setCell ( CPos ( "G5" ), "10" ) );
+  assert ( x5 . setCell ( CPos ( "H5" ), "60" ) );
+  assert ( x5 . setCell ( CPos ( "I5" ), "70" ) );
+
+  CSpreadsheet x6 ( x5 );
+  CSpreadsheet x7;
+  x7 = x5;
+
+  assert ( valueMatch ( x5 . getValue ( CPos ( "A1" ) ), CValue(150.0) ) );
+  assert ( valueMatch ( x6 . getValue ( CPos ( "A1" ) ), CValue(150.0) ) );
+  assert ( valueMatch ( x7 . getValue ( CPos ( "A1" ) ), CValue(150.0) ) );
+  
+  assert ( x5 . setCell ( CPos ( "B1" ), "100" ) );
+
+  assert ( valueMatch ( x5 . getValue ( CPos ( "A1" ) ), CValue(200.0) ) );
+  assert ( valueMatch ( x6 . getValue ( CPos ( "A1" ) ), CValue(150.0) ) );
+  assert ( valueMatch ( x7 . getValue ( CPos ( "A1" ) ), CValue(150.0) ) );
+
+/*
+  CSpreadsheet x8;
+  assert ( x8 . setCell ( CPos ( "C3" ), "=A1+B1+A2" ) );
+  assert ( x8 . setCell ( CPos ( "A1" ), "50" ) );
+  assert ( x8 . setCell ( CPos ( "B1" ), "100" ) );
+  assert ( x8 . setCell ( CPos ( "A2" ), "60" ) );
+  x8 . copyRect ( CPos ( "A1" ), CPos ( "C3" ), 1, 1 );
+*/
+
   return EXIT_SUCCESS;
 }
 #endif /* __PROGTEST__ */
