@@ -1,6 +1,7 @@
 #ifndef expression_h_09845924528375
 #define expression_h_09845924528375
 
+#include <cstdlib>
 #include <string>
 #include <stack>
 #include <memory>
@@ -35,6 +36,7 @@ void                                   parseExpression                         (
 
 class ASTBuilder : public CExprBuilder {
   public:
+      ASTBuilder( const std::string & expr );
       void opAdd () override;
       void opSub () override;
       void opMul () override;
@@ -50,9 +52,14 @@ class ASTBuilder : public CExprBuilder {
       void valNumber ( double val ) override;
       void valString ( std::string val ) override;
       void valReference ( std::string val ) override;
-      void valRange ( std::string val ) override;
-      void funcCall (std::string fnName, int paramCount ) override;
+      void valRange ( std::string val ) override {};
+      void funcCall (std::string fnName, int paramCount ) override {}; 
+ 
+      void getLast ( std::unique_ptr<ASTNode> & root );
   private:
+      void binaryOpSetUp ( std::unique_ptr<ASTNode> & left, std::unique_ptr<ASTNode> & right );
+      void validStack( size_t size );
+
       std::stack<std::unique_ptr<ASTNode>> stack;
 };
 
