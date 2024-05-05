@@ -24,14 +24,11 @@ class ASTNode {
         friend std::ostream & operator << ( std::ostream & os, const ASTNode & node );
 };
 
-// OPERATORS
+// OPERATORS ---------------------------------------------------------------------
 
 class ASTBinaryOperation : public ASTNode {
     public: 
         ASTBinaryOperation( std::unique_ptr<ASTNode> left, std::unique_ptr<ASTNode> right );
-//        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override { throw std::invalid_argument("Copy not working"); };
-//        std::unique_ptr<ASTNode> copy ( const std::pair<int, int> & delta ) const override;
-//        void print ( std::ostream & os ) const override { throw std::invalid_argument("Copy not working"); };
         bool detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
         void printParenthesies( std::ostream & os, const std::string & op ) const;
     protected:
@@ -42,15 +39,12 @@ class ASTBinaryOperation : public ASTNode {
 class ASTUnaryOperation : public ASTNode {
     public: 
         ASTUnaryOperation( std::unique_ptr<ASTNode> node );
-//        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override { return CValue(); };
-//        std::unique_ptr<ASTNode> copy ( const std::pair<int, int> & delta ) const override;
-//        void print ( std::ostream & os ) const override {};
         bool detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
     protected:
         std::unique_ptr<ASTNode> node;
 };
 
-// BINARY OPERATIONS
+// BINARY OPERATIONS ---------------------------------------------------------------------
 
 class ASTAddition : public ASTBinaryOperation {
     public:
@@ -140,7 +134,7 @@ class ASTGreaterOrEqual : public ASTBinaryOperation {
         void print ( std::ostream & os ) const override;
 };
 
-// UNARY OPERATORS
+// UNARY OPERATORS ---------------------------------------------------------------------
 
 class ASTNegative : public ASTUnaryOperation {
     public:
@@ -150,7 +144,7 @@ class ASTNegative : public ASTUnaryOperation {
         void print ( std::ostream & os ) const override;     
 };
 
-// VALUES
+// VALUES ---------------------------------------------------------------------
 
 class ASTStringValue : public ASTNode {
     public:
@@ -174,11 +168,11 @@ class ASTDoubleValue : public ASTNode {
         double value;
 };
 
-// REFFERENCES
+// REFFERENCES ---------------------------------------------------------------------
 
 class ASTRefference : public ASTNode {
     public:
-        ASTRefference ( const CPos & pos );   // might be issue with reffrence to str
+        ASTRefference ( const CPos & pos ); 
         CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
         void print ( std::ostream & os ) const override;
         std::unique_ptr<ASTNode> copy ( const std::pair<int, int> & delta ) const override;
@@ -199,69 +193,5 @@ class ASTRange : public ASTNode {
         CPos startPos;
         CPos endPos;
 };
-
-/*
-
-// FUNCTION
-
-class ASTRangeFunction : public ASTNode {
-    public:
-        ASTRangeFunction ( std::unique_ptr<ASTRange> range );
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;
-        void print ( std::ostream & os ) const override;
-        void printRangeFunction ( std::ostream & os, const std::string & func ) const;
-    protected:
-        std::unique_ptr<ASTRange> range;
-};
-
-class ASTSum : public ASTRangeFunction {
-    public:
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;
-};
-
-class ASTCount : public ASTRangeFunction {
-    public:
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;    
-};
-
-class ASTMin : public ASTRangeFunction {
-    public:
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;    
-};
-
-class ASTMax : public ASTRangeFunction {
-    public:
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;    
-};
-
-class ASTCountVal : public ASTNode {
-    public:
-        ASTCountVal( std::unique_ptr<ASTNode> val, std::unique_ptr<ASTRange> range );
-        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;  
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;
-    private:
-        std::unique_ptr<ASTNode> val;
-        std::unique_ptr<ASTRange> range;
-};
-
-class ASTIf : public ASTNode {
-    public:
-        ASTIf( std::unique_ptr<ASTNode> cond, std::unique_ptr<ASTNode> ifTrue, std::unique_ptr<ASTNode> ifFalse );
-        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;  
-        CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
-        void print ( std::ostream & os ) const override;
-    private:
-        std::unique_ptr<ASTNode> cond;
-        std::unique_ptr<ASTNode> ifTrue;
-        std::unique_ptr<ASTNode> ifFalse;
-};
-
-*/
 
 #endif // AST_H

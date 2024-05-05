@@ -120,52 +120,6 @@ void ASTBuilder::valRange(std::string val) {
     stack.push(std::make_unique<ASTRange>(pos1, pos2));
 }
 
-/*
-
-void ASTBuilder::funcCall(std::string fnName, int paramCount) {
-    if (fnName == "sum") {
-        validStack(1);
-        std::shared_ptr<ASTNode> range = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTSum>(std::move(range)));
-    } else if (fnName == "count") {
-        validStack(1);
-        std::shared_ptr<ASTNode> range = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTCount>(std::move(range)));
-    } else if (fnName == "min") {
-        validStack(1);
-        std::shared_ptr<ASTNode> range = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTMin>(std::move(range)));
-    } else if (fnName == "max") {
-        validStack(1);
-        std::shared_ptr<ASTNode> range = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTMax>(std::move(range)));
-    } else if (fnName == "countval") {
-        validStack(2);
-        std::shared_ptr<ASTNode> value = std::move(stack.top());
-        stack.pop();
-        std::shared_ptr<ASTNode> range = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTCountVal>(std::move(value), std::move(range)));
-    } else if (fnName == "if") {
-        validStack(3);
-        std::shared_ptr<ASTNode> cond = std::move(stack.top());
-        stack.pop();
-        std::shared_ptr<ASTNode> ifTrue = std::move(stack.top());
-        stack.pop();
-        std::shared_ptr<ASTNode> ifFalse = std::move(stack.top());
-        stack.pop();
-        stack.push(std::make_unique<ASTIf>(std::move(cond), std::move(ifTrue), std::move(ifFalse)));
-    } else {
-        throw std::invalid_argument("Unsupported function: " + fnName);
-    }
-}
-
-*/
-
 bool ASTBuilder::getLast ( std::unique_ptr<ASTNode> & root ) {
     if ( stack.size() != 1 || !validBuild ) {
         throw std::invalid_argument("Invalid heap size.");

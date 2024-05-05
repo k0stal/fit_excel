@@ -192,7 +192,7 @@ int main ()
   assert ( valueMatch ( x0 . getValue ( CPos ( "H13" ) ), CValue ( -22.0 ) ) );
   assert ( valueMatch ( x0 . getValue ( CPos ( "H14" ) ), CValue ( -22.0 ) ) );
 
-  // cyclic detection
+  // cyclic detection ---------------------------------------------------------------------
 
   CSpreadsheet x2;
   assert ( x2 . setCell ( CPos ( "A1" ), "=B1" ) );
@@ -420,7 +420,7 @@ int main ()
   assert(valueMatch(test1.getValue(CPos("G5")), CValue(0.0)));
   assert(valueMatch(test1.getValue(CPos("G6")), CValue(-10.0)));
   
-// operators <>, =, <=, <, >, >=
+// operators <>, =, <=, <, >, >= ---------------------------------------------------------------------
 
   assert(test1.setCell(CPos("H1"), "=AAAA5555<>10"));
   assert(test1.setCell(CPos("H2"), "=10<>uiop234"));
@@ -603,6 +603,8 @@ int main ()
 
   assert(valueMatch(test3.getValue(CPos("A3")), CValue("1.23abcd"))); 
   assert(valueMatch(test3.getValue(CPos("A6")), CValue("1abcd"))); 
+
+  // CPos tests ---------------------------------------------------------------------
 
   CSpreadsheet test10;
   assert(test10.setCell(CPos("A0"), "0"));

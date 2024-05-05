@@ -266,24 +266,20 @@ std::unique_ptr<ASTNode> ASTRefference::copy ( const std::pair<int, int> & delta
 }
 
 bool ASTRefference::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const { 
-//    auto vIt = visited . find ( pos );
-//    if ( vIt == visited . end () ) {
+    visited . emplace ( pos );
+    stack . emplace ( pos );
 
-        visited . emplace ( pos );
-        stack . emplace ( pos );
+    auto mIt = map . find ( this->pos );
+    if ( mIt == map . end() )
+        return false;
 
-        auto mIt = map . find ( this->pos );
-        if ( mIt == map . end() )
-            return false;
-
-        auto vIt = visited . find ( mIt->first );
-        auto sIt = stack . find ( mIt->first );
+    auto vIt = visited . find ( mIt->first );
+    auto sIt = stack . find ( mIt->first );
         
-        if ( vIt == visited . end() && mIt->second->detectCycle( this->pos, visited, stack, map ) )
-            return true;
-        else if ( sIt != stack . end() )
-            return true;
-//    }
+    if ( vIt == visited . end() && mIt->second->detectCycle( this->pos, visited, stack, map ) )
+        return true;
+    else if ( sIt != stack . end() )
+        return true;
 
     stack . erase ( pos );
     return false;
@@ -296,7 +292,7 @@ ASTRange::ASTRange ( const CPos & start, const CPos & end ):
     endPos( end ) {} 
 
 CValue ASTRange::evaluate( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    return std::monostate{};   // should not be called
+    return std::monostate{};
 }
 
 void ASTRange::evaluateRange ( std::vector<CValue> & values, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
@@ -315,149 +311,5 @@ std::unique_ptr<ASTNode> ASTRange::copy ( const std::pair<int, int> & delta ) co
 }
 
 bool ASTRange::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    return false;  //todo
+    return false; 
 }
-
-/*
-
-// FUNCTIONS --------------------------------------------------------------------
-// RANGE FUNCTION ---------------------------------------------------------------
-
-ASTRangeFunction::ASTRangeFunction ( std::unique_ptr<ASTRange> range ):
-    range(std::move(range)) {}
-
-std::unique_ptr<ASTNode> ASTRangeFunction::copy ( const CPos & pos ) const {
-    return std::make_unique<ASTRangeFunction>( this->range->copy( pos ) );
-}
-
-void ASTRangeFunction::printRangeFunction ( std::ostream & os, const std::string & func ) const {
-    os << func << " (" << this->range.get() << ")";
-}
-
-// SUM --------------------------------------------------------------------------
-
-CValue ASTSum::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CValue> values = {};
-    this->range->evaluateRange( values, map );
-    CValue sum = values[0];
-    for ( size_t i = 1; i < values.size(); i++ )
-        sum = sum + values[i];
-    return sum;
-}
-
-void ASTSum::print ( std::ostream & os ) const {
-    printRangeFunction( os, "sum" );
-}
-
-// COUNT ------------------------------------------------------------------------
-
-CValue ASTCount::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CValue> values = {};
-    this->range->evaluateRange( values, map );
-    CValue count = 0.0;
-    for( size_t i = 0; i < values.size(); i++ )
-        if ( !std::holds_alternative<std::monostate>(values[i]) )
-            count = count + 1.0;
-    return count;
-}
-
-void ASTCount::print ( std::ostream & os ) const {
-    printRangeFunction( os, "sum" );
-}
-
-// MIN --------------------------------------------------------------------------
-
-CValue ASTMin::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CValue> values = {};
-    this->range->evaluateRange( values, map );
-    CValue min = std::monostate{};
-    bool init = true;
-    for ( size_t i = 0; i < values.size(); i++ ) {
-        if ( init && std::holds_alternative<double>(values[i]) ) {
-            min = values[i];
-            continue;
-        }
-
-        if ( std::holds_alternative<double>(values[i] < min) && std::get<double>(values[i] < min))
-            min = values[i];
-    }
-    return min;
-}
-
-void ASTMin::print ( std::ostream & os ) const {
-    printRangeFunction( os, "sum" );
-}
-
-// MAX --------------------------------------------------------------------------
-
-CValue ASTMax::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CValue> values = {};
-    this->range->evaluateRange( values, map );
-    CValue max = std::monostate{};
-    bool init = true;
-    for ( size_t i = 0; i < values.size(); i++ ) {
-        if ( init && std::holds_alternative<double>(values[i]) ) {
-            max = values[i];
-            continue;
-        }
-
-        if ( std::holds_alternative<double>(values[i] > max) && std::get<double>(values[i] > max) )
-            max = values[i];
-    }
-    return max;
-}
-
-void ASTMax::print ( std::ostream & os ) const {
-    printRangeFunction( os, "sum" );
-}
-
-// COUNT VALUE ------------------------------------------------------------------
-
-ASTCountVal::ASTCountVal( std::unique_ptr<ASTNode> val, std::unique_ptr<ASTRange> range ):
-    val(std::move(val)),
-    range(std::move(range)) {}
-
-std::unique_ptr<ASTNode> ASTCountVal::copy ( const CPos & pos ) const {
-    return std::make_unique<ASTCountVal>( this->val->copy( pos ), this->range->copy ( pos ) );
-}
-
-CValue ASTCountVal::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CValue> values = {};
-    this->range->evaluateRange( values, map );
-    CValue count = 0.0;
-    for ( size_t i = 0; i < values.size(); i++ ) {
-        CValue valEval = val->evaluate(map);
-        if ( std::holds_alternative<double>(values[i] == valEval) && std::get<double>(values[i] == valEval) )
-            count = count + 1.0;
-    }
-    return count;
-}
-
-void ASTCountVal::print ( std::ostream & os ) const {
-    os << "countval (" << val.get() << ", " << range.get() << ")";
-}
-
-// IF ---------------------------------------------------------------------------
-
-ASTIf::ASTIf( std::unique_ptr<ASTNode> cond, std::unique_ptr<ASTNode> ifTrue, std::unique_ptr<ASTNode> ifFalse ):
-    cond(std::move(cond)),
-    ifTrue(std::move(ifTrue)),
-    ifFalse(std::move(ifFalse)) {}
-
-std::unique_ptr<ASTNode> ASTIf::copy ( const CPos & pos ) const {
-    return std::make_unique<ASTIf>( cond->copy( pos ), ifTrue->copy( pos ), ifFalse->copy( pos ) );
-}
-
-CValue ASTIf::evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    CValue condEval = cond->evaluate( map );
-    if ( std::holds_alternative<double>( condEval ) )
-        return ifTrue->evaluate ( map );
-    else
-        return ifFalse->evaluate ( map );
-}
-
-void ASTIf::print ( std::ostream & os ) const {
-    os << "if (" << cond.get() << ", " << ifTrue.get() << ", " << ifFalse.get() << ")";
-}
-
-*/

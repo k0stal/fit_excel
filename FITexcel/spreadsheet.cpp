@@ -120,8 +120,6 @@ CValue CSpreadsheet::getValue ( CPos pos ) {
     if ( it != map.end() ) {
         std::set<CPos> visited;
         std::set<CPos> stack;
-//        visited . emplace ( pos );
-//        stack . emplace ( pos );
         if ( it->second->detectCycle ( pos, visited, stack, this->map ) )
             return std::monostate{};
         it->second->print ( std::cout );
