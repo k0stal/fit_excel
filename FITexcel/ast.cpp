@@ -106,7 +106,7 @@ std::unique_ptr<ASTNode> ASTEqual::copy ( const std::pair<int, int> & delta ) co
 }
 
 void ASTEqual::print(std::ostream& os) const {
-    printParenthesies(os, "==");
+    printParenthesies(os, "=");
 }
 
 // NOT EQUAL --------------------------------------------------------------------
@@ -120,7 +120,7 @@ std::unique_ptr<ASTNode> ASTNotEqual::copy ( const std::pair<int, int> & delta )
 }
 
 void ASTNotEqual::print(std::ostream& os) const {
-    printParenthesies(os, "!=");
+    printParenthesies(os, "<>");
 }
 
 // LESS THAN --------------------------------------------------------------------
@@ -289,7 +289,6 @@ bool ASTRefference::detectCycle( const CPos & pos, std::set<CPos> & visited, std
     return false;
 }
 
-/*
 // RANGE ------------------------------------------------------------------------
 
 ASTRange::ASTRange ( const CPos & start, const CPos & end ):
@@ -311,11 +310,15 @@ void ASTRange::print( std::ostream & os ) const {
     os << startPos << ":" << endPos;
 }
 
-std::unique_ptr<ASTNode> ASTRange::copy( const CPos & pos ) const {
-    return std::make_unique<ASTRange>( this->startPos.copy(pos), this->endPos.copy(pos) );
+std::unique_ptr<ASTNode> ASTRange::copy ( const std::pair<int, int> & delta ) const {
+    return std::make_unique<ASTRange>( this->startPos.copy(delta), this->endPos.copy(delta) );
 }
 
+bool ASTRange::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
+    return false;  //todo
+}
 
+/*
 
 // FUNCTIONS --------------------------------------------------------------------
 // RANGE FUNCTION ---------------------------------------------------------------

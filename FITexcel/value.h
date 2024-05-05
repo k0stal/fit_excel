@@ -14,7 +14,7 @@ CValue operator - ( const CValue & a, const CValue & b );
 CValue operator - ( const CValue & a );
 CValue operator * ( const CValue & a, const CValue & b );
 CValue operator / ( const CValue & a, const CValue & b );
-CValue operator ^ ( const CValue & base, const CValue & exponent );
+CValue operator ^ ( const CValue & a, const CValue & b );
 CValue operator < ( const CValue & a, const CValue & b );
 CValue operator > ( const CValue & a, const CValue & b );
 CValue operator == ( const CValue & a, const CValue & b );

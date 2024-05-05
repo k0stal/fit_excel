@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <string>
 #include <stack>
+#include <utility>
 #include <memory>
 
 #include "ast.h"
@@ -36,7 +37,7 @@ void                                   parseExpression                         (
 
 class ASTBuilder : public CExprBuilder {
   public:
-      ASTBuilder( const std::string & expr );
+      ASTBuilder();
       void opAdd () override;
       void opSub () override;
       void opMul () override;
@@ -52,14 +53,14 @@ class ASTBuilder : public CExprBuilder {
       void valNumber ( double val ) override;
       void valString ( std::string val ) override;
       void valReference ( std::string val ) override;
-      void valRange ( std::string val ) override {};
+      void valRange ( std::string val ) override;
       void funcCall (std::string fnName, int paramCount ) override {}; 
  
-      void getLast ( std::unique_ptr<ASTNode> & root );
+      bool getLast ( std::unique_ptr<ASTNode> & root );
   private:
+      std::pair<bool, bool> extractFixation ( std::string & valOrig, std::string & valMod );
       void binaryOpSetUp ( std::unique_ptr<ASTNode> & left, std::unique_ptr<ASTNode> & right );
-      void validStack( size_t size );
-
+      bool validBuild = true;
       std::stack<std::unique_ptr<ASTNode>> stack;
 };
 

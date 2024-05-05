@@ -187,19 +187,20 @@ class ASTRefference : public ASTNode {
         CPos pos;
 };
 
-/*
-
 class ASTRange : public ASTNode {
     public:
         ASTRange ( const CPos & start, const CPos & end );
         CValue evaluate ( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
         void evaluateRange ( std::vector<CValue> & values, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const;
         void print ( std::ostream & os ) const override;
-        std::unique_ptr<ASTNode> copy ( const CPos & pos ) const override;
+        std::unique_ptr<ASTNode> copy ( const std::pair<int, int> & delta ) const override;
+        bool detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const override;
     private:
         CPos startPos;
         CPos endPos;
 };
+
+/*
 
 // FUNCTION
 

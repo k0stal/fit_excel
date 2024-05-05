@@ -54,15 +54,15 @@ class CSpreadsheet
     CSpreadsheet ();
     ~CSpreadsheet() = default;
     CSpreadsheet( CSpreadsheet & arg );
-    CSpreadsheet & operator = ( CSpreadsheet & arg );                
+    CSpreadsheet( CSpreadsheet && arg);
+    CSpreadsheet & operator = ( const CSpreadsheet & arg );                
     bool load ( std::istream & is );
     bool save ( std::ostream & os ) const;
     bool setCell ( CPos pos, std::string contents );
     CValue getValue ( CPos pos );
     void copyRect ( CPos dst, CPos src, int w = 1, int h = 1 );
   private:
-    bool containsCycle ( const CPos & pos, const std::map<CPos, std::set<CPos>> & graph, std::set<CPos> & visited, std::set<CPos> & stack ) const;
-    std::map<CPos, std::unique_ptr<ASTNode>> map;
+     std::map<CPos, std::unique_ptr<ASTNode>> map;
 };
 
 #endif // SPREADSHEET_H

@@ -1,15 +1,13 @@
 #include "expression.h"
 
-ASTBuilder::ASTBuilder( const std::string & expr ):
-    stack() {
-    parseExpression( expr, *this );
-}
+ASTBuilder::ASTBuilder():
+    stack() {}
 
 void ASTBuilder::opAdd() {
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
     binaryOpSetUp(left, right);
-    stack.push(std::make_unique<ASTAddition>(std::move(left), std::move(right)));
+    stack.push(std::make_unique<ASTAddition>(std::move(right), std::move(left)));
 }
 
 void ASTBuilder::opSub() {
@@ -23,7 +21,7 @@ void ASTBuilder::opMul() {
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
     binaryOpSetUp(left, right);
-    stack.push(std::make_unique<ASTMultiplication>(std::move(left), std::move(right)));
+    stack.push(std::make_unique<ASTMultiplication>(std::move(right), std::move(left)));
 }
 
 void ASTBuilder::opDiv() {
@@ -50,14 +48,14 @@ void ASTBuilder::opEq() {
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
     binaryOpSetUp(left, right);
-    stack.push(std::make_unique<ASTEqual>(std::move(left), std::move(right))); 
+    stack.push(std::make_unique<ASTEqual>(std::move(right), std::move(left))); 
 }
 
 void ASTBuilder::opNe() {
     std::unique_ptr<ASTNode> left;
     std::unique_ptr<ASTNode> right;
     binaryOpSetUp(left, right);
-    stack.push(std::make_unique<ASTNotEqual>(std::move(left), std::move(right))); 
+    stack.push(std::make_unique<ASTNotEqual>(std::move(right), std::move(left))); 
 }
 
 void ASTBuilder::opLt() {
@@ -97,19 +95,32 @@ void ASTBuilder::valString(std::string val) {
 }
 
 void ASTBuilder::valReference(std::string val) {
-    CPos pos (val);
+    std::string mod = "";
+    std::pair<bool, bool> fixation = extractFixation ( val, mod );
+    CPos pos (mod);
+    pos . addFixation ( fixation );
     stack.push(std::make_unique<ASTRefference>(pos));
 }
-
-/*
 
 void ASTBuilder::valRange(std::string val) {
     size_t pos = val.find(':');
     if (pos == std::string::npos) {
         throw std::invalid_argument("Invalid cell range identification");
     }
-    stack.push(std::make_unique<ASTRange>(val.substr(0, pos), val.substr(pos + 1)));
+    std::string mod1 = "";
+    std::string mod2 = "";
+    std::string val1 = val.substr(0, pos);
+    std::string val2 = val.substr(pos + 1);
+    std::pair<bool, bool> fixation1 = extractFixation ( val1, mod1 );
+    std::pair<bool, bool> fixation2 = extractFixation ( val2, mod2 );
+    CPos pos1 ( mod1 );
+    CPos pos2 ( mod1 );
+    pos1 . addFixation ( fixation1 );
+    pos2 . addFixation ( fixation2 );
+    stack.push(std::make_unique<ASTRange>(pos1, pos2));
 }
+
+/*
 
 void ASTBuilder::funcCall(std::string fnName, int paramCount) {
     if (fnName == "sum") {
@@ -155,23 +166,53 @@ void ASTBuilder::funcCall(std::string fnName, int paramCount) {
 
 */
 
-void ASTBuilder::getLast ( std::unique_ptr<ASTNode> & root ) {
-    validStack ( 1 );
+bool ASTBuilder::getLast ( std::unique_ptr<ASTNode> & root ) {
+    if ( stack.size() != 1 || !validBuild ) {
+        throw std::invalid_argument("Invalid heap size.");
+        return false;
+    }
     root = std::move(stack.top());
-//    root->print( std::cout );
-//    std::cout << std::endl;
     stack.pop();
+    return true;
+}
+
+std::pair<bool, bool> ASTBuilder::extractFixation ( std::string & valOrig, std::string & valMod ) {
+    std::pair<bool, bool> fixation = {false, false};
+    if (valOrig.empty())
+        return fixation;
+
+    auto it = valOrig.begin();
+
+    if (*it == '$') {
+        fixation.first = true;
+        ++it;
+    }
+
+    for (; *it != '$' && it != valOrig.end(); ++it)
+        valMod += *it;
+    
+    if (it == valOrig.end()) {
+        return fixation;
+    }
+
+    if (*it == '$') {
+        fixation.second = true;
+        ++it;
+    }    
+
+    for (; it != valOrig.end(); ++it)
+        valMod += *it;
+
+    return fixation;
 }
 
 void ASTBuilder::binaryOpSetUp ( std::unique_ptr<ASTNode> & left, std::unique_ptr<ASTNode> & right ) {
-    //validStack ( 2 );
+    if ( stack.size() < 2 ) {
+        throw std::invalid_argument("Invalid heap size.");
+         validBuild = false;
+    }
     left = std::move(stack.top());
     stack.pop();
     right = std::move(stack.top());
     stack.pop();
-}
-
-void ASTBuilder::validStack( size_t size ) {
-    if ( stack.size() != size )
-        throw std::invalid_argument("");
 }

@@ -12,7 +12,8 @@ class CPos
         CPos ();
         CPos ( std::string_view str );
         CPos ( std::pair<int, int> coo, std::pair<int, int> fixed );
-        CPos copy ( const std::pair<int, int> & delta ) const;  // refference??
+        CPos copy ( const std::pair<int, int> & delta ) const;
+        void addFixation ( std::pair<bool, bool> & fixation );
         CPos & operator = ( const CPos & arg );
         std::pair<int, int> operator - ( const CPos & arg);
         bool operator < ( const CPos & arg ) const;

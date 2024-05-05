@@ -13,30 +13,22 @@ CPos::CPos ( std::string_view str ):
 
     auto it = str.begin();
 
-    if (*it == '$') {
-        fixed.first = true;
-        ++it;
-    }
+    if (!std::isalpha(*it))
+        throw std::invalid_argument("Invalid cell identification."); 
 
-    for (; std::isalpha(*it); ++it) {
-        coo.first = coo.first * 26 + (*it - 'A');
-    }
+    for (; std::isalpha(*it); ++it)
+        coo.first = coo.first * 26 + (std::tolower(*it) - 'a') + 1;
 
-    if (*it == '$') {
-        fixed.second = true;
-        ++it;
-    } else if (!std::isdigit(*it)) {
+    if (!std::isdigit(*it)) {
         throw std::invalid_argument("Invalid cell identification.");
     }
 
-    for (; std::isdigit(*it); ++it) {
+    for (; std::isdigit(*it); ++it)
         coo.second = coo.second * 10 + (*it - '0');
-    }
 
     if (it != str.end()) {
         throw std::invalid_argument("Invalid cell identification.");
     }
-
 }
 
 CPos::CPos ( std::pair<int, int> coo, std::pair<int, int> fixed ):
@@ -51,10 +43,14 @@ CPos CPos::copy ( const std::pair<int, int> & delta ) const {
     if ( !fixed.second )
         res.coo.second += delta.second;
 
-    if ( res.coo.first < 0 || res.coo.second < 0 )
+    if ( res.coo.first < 1 || res.coo.second < 0 )
         throw std::invalid_argument("Invalid cell identification.");
 
     return res;
+}
+
+void CPos::addFixation ( std::pair<bool, bool> & fixation ) {
+    this->fixed = fixation;
 }
 
 CPos & CPos::operator = ( const CPos & arg ) {
@@ -66,7 +62,7 @@ CPos & CPos::operator = ( const CPos & arg ) {
     return *this;
 }
 
-std::pair<int, int> CPos::operator - ( const CPos & arg) {
+std::pair<int, int> CPos::operator - ( const CPos & arg ) {
     return std::make_pair( this->coo.first - arg.coo.first, this->coo.second - arg.coo.second);
 }
 
@@ -104,7 +100,7 @@ void CPos::getCellName (std::string & name) const {
         name += "$";
 
     while ( colNum >= 0 ) {            
-        int modulo = colNum % 26;
+        int modulo = (colNum - 1) % 26;
         char c = 'A' + modulo;
         col = c + col;
         colNum = (colNum - modulo) / 26;

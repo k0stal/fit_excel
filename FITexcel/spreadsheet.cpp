@@ -3,14 +3,17 @@
 CSpreadsheet::CSpreadsheet ():
     map() {}
 
-CSpreadsheet::CSpreadsheet( CSpreadsheet & arg ):
+CSpreadsheet::CSpreadsheet ( CSpreadsheet & arg ):
     map() {
     std::map<CPos, std::unique_ptr<ASTNode>> newMap;
     for ( const auto & cell : arg.map )
         map . emplace ( cell.first, cell.second->copy( std::pair(0, 0) ) );
 }
 
-CSpreadsheet & CSpreadsheet::operator = ( CSpreadsheet & arg ) {
+CSpreadsheet::CSpreadsheet ( CSpreadsheet && arg ):
+    map(std::move(arg.map)) {}
+
+CSpreadsheet & CSpreadsheet::operator = ( const CSpreadsheet & arg ) {
     map.clear();
     for ( const auto & cell : arg.map )
         map . emplace ( cell.first, cell.second->copy( std::pair(0, 0) ));
@@ -65,7 +68,8 @@ bool CSpreadsheet::load ( std::istream & is ) {
             value += c;
         }
 
-        this->setCell(CPos(cell), value);
+        if (!this->setCell(CPos(cell), value))
+            return false;
 
         if (is.eof())
             return true;
@@ -93,11 +97,16 @@ bool CSpreadsheet::save ( std::ostream & os ) const {
 }
 
 bool CSpreadsheet::setCell ( CPos pos, std::string contents ) {
-    ASTBuilder builder ( contents );
+    ASTBuilder builder;
+    try {
+        parseExpression(contents, builder);
+    } catch ( std::invalid_argument & e ) {
+        return false;
+    }
+
     std::unique_ptr<ASTNode> root;
-    builder.getLast(root);
-    root->print ( std::cout );
-    std::cout << std::endl;
+    if (!builder.getLast(root))
+        return false;
     auto it = map.find( pos );
     if ( it == map.end() ) 
         map . emplace ( pos, std::move(root));
@@ -136,39 +145,14 @@ void CSpreadsheet::copyRect ( CPos dst, CPos src, int w, int h ) {
         auto tmp = it->second->copy( delta );
         tmpMap . emplace ( dstPositions[i], std::move(tmp) );
     }
-
     for ( const auto & cell : tmpMap ) {
         auto it = map.find(cell.first); 
         if ( it == map.end() ) {
-            auto tmp = cell.second->copy( std::pair(0, 0));
+            auto tmp = cell.second->copy( std::pair(0, 0) );
             map . emplace ( cell.first, std::move(tmp));
         }   
         else {
             it->second = (cell.second->copy( std::pair(0, 0) ));
         }
     }
-}
-
-bool CSpreadsheet::containsCycle ( const CPos & pos, const std::map<CPos, std::set<CPos>> & graph, std::set<CPos> & visited, std::set<CPos> & stack ) const {
-    auto vIt = visited . find ( pos );
-    if ( vIt == visited . end () ) {
-        visited . emplace ( pos );
-        stack . emplace ( pos );
-
-        auto gIt = graph . find ( pos );
-        for ( const auto & neigh : gIt->second ) {
-//            auto mIt = map . find ( neigh );
-//            if ( mIt == map . end () )
-//                continue;            
-            auto vIt = visited . find ( neigh );
-            auto sIt = stack . find ( neigh ); 
-
-            if ( vIt == visited . end() && containsCycle(neigh, graph, visited, stack) )     
-                return true;
-            else if ( sIt != stack . end() )
-                return true;      
-        }
-    }
-    stack . erase ( pos );
-    return false;
 }
