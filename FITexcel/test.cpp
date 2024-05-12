@@ -306,6 +306,7 @@ int main ()
   CSpreadsheet x9;
 
   assert ( x9 . setCell ( CPos ( "A1" ), "1" ) );
+  assert ( x9 . setCell ( CPos ( "A1" ), "1" ) );
   assert ( x9 . setCell ( CPos ( "B1" ), "2" ) );
   assert ( x9 . setCell ( CPos ( "C1" ), "3" ) );
   assert ( x9 . setCell ( CPos ( "D1" ), "4" ) );

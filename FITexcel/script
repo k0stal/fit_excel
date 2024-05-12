@@ -1,0 +1,23 @@
+#!/bin/bash
+
+OUTPUT_FILE="all_in_one.cpp"
+FILES="value.h value.cpp position.h position.cpp ast.h ast.cpp expression.h expression.cpp spreadsheet.h spreadsheet.cpp"
+
+grep -vh '^#include' $FILES > "$OUTPUT_FILE"
+
+sed -i '' '/#ifndef/d' "$OUTPUT_FILE"
+sed -i '' '/#define/d' "$OUTPUT_FILE"
+sed -i '' '/#endif/d' "$OUTPUT_FILE"
+
+
+sed -i '' '/using namespace std::literals;/d' "$OUTPUT_FILE"
+sed -i '' '/using CValue = std::variant<std::monostate, double, std::string>;/d' "$OUTPUT_FILE"
+
+
+sed -i '' '/class CExprBuilder/s/^/\/\*/' "$OUTPUT_FILE"
+sed -i '' '/class ASTBuilder : public CExprBuilder/s/^/ \*\//' "$OUTPUT_FILE"
+
+sed -i '' '/constexpr/d' "$OUTPUT_FILE"
+
+
+

@@ -53,7 +53,7 @@ class ASTBuilder : public CExprBuilder {
       void valNumber ( double val ) override;
       void valString ( std::string val ) override;
       void valReference ( std::string val ) override;
-      void valRange ( std::string val ) override;
+      void valRange ( std::string val ) override {};
       void funcCall (std::string fnName, int paramCount ) override {}; 
  
       bool getLast ( std::unique_ptr<ASTNode> & root );

@@ -32,20 +32,20 @@ bool CSpreadsheet::load ( std::istream & is ) {
         if ( is.eof() )
             return true;
 
-        if ( is.fail() || (!isalpha(c) && c != '$'))
+        if ( is.fail() || (!std::isalpha(c) && c != '$'))
             return false;
 
         cell += c;
         
-        while (is.get(c) && isalpha(c) && !is.fail() && !is.eof() )
+        while (is.get(c) && std::isalpha(c) && !is.fail() && !is.eof() )
             cell += c;
 
-        if ((!isnumber(c) && c != '$' ) || is.fail() || is.eof() )
+        if ((!isdigit(c) && c != '$' ) || is.fail() || is.eof() )
             return false;
 
         cell += c;
 
-        while (is.get(c) && isnumber(c) && !is.fail() && !is.eof() )
+        while (is.get(c) && isdigit(c) && !is.fail() && !is.eof() )
             cell += c;
 
         if (c == '$')
@@ -54,7 +54,7 @@ bool CSpreadsheet::load ( std::istream & is ) {
             return false;
 
         std::string sizeStr;
-        while (is.get(c) && isnumber(c))
+        while (is.get(c) && isdigit(c))
             sizeStr += c;
         
         if (c != '-')

@@ -102,24 +102,6 @@ void ASTBuilder::valReference(std::string val) {
     stack.push(std::make_unique<ASTRefference>(pos));
 }
 
-void ASTBuilder::valRange(std::string val) {
-    size_t pos = val.find(':');
-    if (pos == std::string::npos) {
-        throw std::invalid_argument("Invalid cell range identification");
-    }
-    std::string mod1 = "";
-    std::string mod2 = "";
-    std::string val1 = val.substr(0, pos);
-    std::string val2 = val.substr(pos + 1);
-    std::pair<bool, bool> fixation1 = extractFixation ( val1, mod1 );
-    std::pair<bool, bool> fixation2 = extractFixation ( val2, mod2 );
-    CPos pos1 ( mod1 );
-    CPos pos2 ( mod1 );
-    pos1 . addFixation ( fixation1 );
-    pos2 . addFixation ( fixation2 );
-    stack.push(std::make_unique<ASTRange>(pos1, pos2));
-}
-
 bool ASTBuilder::getLast ( std::unique_ptr<ASTNode> & root ) {
     if ( stack.size() != 1 || !validBuild ) {
         throw std::invalid_argument("Invalid heap size.");

@@ -285,31 +285,3 @@ bool ASTRefference::detectCycle( const CPos & pos, std::set<CPos> & visited, std
     return false;
 }
 
-// RANGE ------------------------------------------------------------------------
-
-ASTRange::ASTRange ( const CPos & start, const CPos & end ):
-    startPos( start ),
-    endPos( end ) {} 
-
-CValue ASTRange::evaluate( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    return std::monostate{};
-}
-
-void ASTRange::evaluateRange ( std::vector<CValue> & values, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    std::vector<CPos> positoins = {};
-    rectIterationPos( positoins, startPos, endPos );
-    for ( const auto & pos : positoins )    
-        values . push_back ( map.find(pos)->second->evaluate(map) );
-}
-
-void ASTRange::print( std::ostream & os ) const {
-    os << startPos << ":" << endPos;
-}
-
-std::unique_ptr<ASTNode> ASTRange::copy ( const std::pair<int, int> & delta ) const {
-    return std::make_unique<ASTRange>( this->startPos.copy(delta), this->endPos.copy(delta) );
-}
-
-bool ASTRange::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    return false; 
-}
