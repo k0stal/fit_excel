@@ -44,25 +44,89 @@ constexpr unsigned                     SPREADSHEET_FILE_IO                     =
 constexpr unsigned                     SPREADSHEET_SPEED                       = 0x08;
 constexpr unsigned                     SPREADSHEET_PARSER                      = 0x10;
 
+/**
+* Class representing excel spreadsheet.
+*/
 class CSpreadsheet
 {
-  public:
-    static unsigned capabilities () {
-      return SPREADSHEET_CYCLIC_DEPS | SPREADSHEET_FILE_IO | SPREADSHEET_SPEED ;
-    }
+    public:
+        /**
+        * Return unsigned representing implmeneted functionalities
+        * @return Binary or of codes representing functionalities.
+        */
+        static unsigned capabilities () {
+        return SPREADSHEET_CYCLIC_DEPS | SPREADSHEET_FILE_IO | SPREADSHEET_SPEED ;
+        }
     
-    CSpreadsheet ();
-    ~CSpreadsheet() = default;
-    CSpreadsheet( CSpreadsheet & arg );
-    CSpreadsheet( CSpreadsheet && arg);
-    CSpreadsheet & operator = ( const CSpreadsheet & arg );                
-    bool load ( std::istream & is );
-    bool save ( std::ostream & os ) const;
-    bool setCell ( CPos pos, std::string contents );
-    CValue getValue ( CPos pos );
-    void copyRect ( CPos dst, CPos src, int w = 1, int h = 1 );
-  private:
-     std::map<CPos, std::unique_ptr<ASTNode>> map;
+        /**
+        * Construct empty spreadsheet object.
+        */
+        CSpreadsheet ();
+
+        /**
+        * Destruct spreadsheet object.
+        */
+        ~CSpreadsheet() = default;
+
+        /**
+        * Copy construct spreadsheet using reference.
+        * @param arg CSpreadsheet reference.
+        */
+        CSpreadsheet( CSpreadsheet & arg );
+
+        /**
+        * Copy construct spreadsheet r-value reference.
+        * @param arg CSpreadsheet r-value reference.
+        */
+        CSpreadsheet( CSpreadsheet && arg);
+
+        /**
+        * Assign values from argument spreadsheet to this spreadsheet object.
+        * @param arg CSpreadsheet reference.
+        * @return CSpreadsheet reference.
+        */
+        CSpreadsheet & operator = ( const CSpreadsheet & arg );   
+
+        /**
+        * Load spreadsheet based on the input stream. 
+        * @param is input stream reference.
+        * @return boolean value whether loading was succesful.
+        */             
+        bool load ( std::istream & is );
+
+        /**
+        * Save spreadsheet to the output stream.
+        * @param os output stream reference.
+        * @return boolean value whether saving was succesful.
+        */
+        bool save ( std::ostream & os ) const;
+
+        /**
+        * Set specified cell with certain value.
+        * @param pos position of targeted cell.
+        * @param contents string with certain value.
+        * @return boolean value whether setting the value vas succesful.
+        */
+        bool setCell ( CPos pos, std::string contents );
+
+        /**
+        * Retrieve value of a specified cell.
+        * @param pos position of targeted cell.
+        * @return value of the targeted cell.
+        */
+        CValue getValue ( CPos pos );
+
+        /**
+        * Copy rectangle of cells with upper-left corner in src with width w and height h to destination position dst.
+        * @param dst copy destination position.
+        * @param src copy source position.
+        * @param w rectangle width.
+        * @param h rectangle height.
+        */
+        void copyRect ( CPos dst, CPos src, int w = 1, int h = 1 );
+    
+    private:
+        std::map<CPos, std::unique_ptr<ASTNode>> map;
 };
 
 #endif // SPREADSHEET_H

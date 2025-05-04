@@ -60,6 +60,8 @@ bool                                   valueMatch                              (
 int main ()
 {
 
+  // General basic tests ---------------------------------------------------------------------
+
   CSpreadsheet x0, x1;
   std::ostringstream oss;
   std::istringstream iss;
@@ -421,7 +423,7 @@ int main ()
   assert(valueMatch(test1.getValue(CPos("G5")), CValue(0.0)));
   assert(valueMatch(test1.getValue(CPos("G6")), CValue(-10.0)));
   
-// operators <>, =, <=, <, >, >= ---------------------------------------------------------------------
+// testing of operators <>, =, <=, <, >, >= ------------------------------------------------
 
   assert(test1.setCell(CPos("H1"), "=AAAA5555<>10"));
   assert(test1.setCell(CPos("H2"), "=10<>uiop234"));

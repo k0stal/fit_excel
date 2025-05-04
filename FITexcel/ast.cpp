@@ -1,5 +1,5 @@
 #include "ast.h"
-
+        
 std::ostream & operator << ( std::ostream & os, ASTNode * node ) {
     node->print( os );
     return os;
@@ -11,9 +11,9 @@ ASTBinaryOperation::ASTBinaryOperation ( std::unique_ptr<ASTNode> left, std::uni
     left(std::move(left)), 
     right(std::move(right)) {}
 
-bool ASTBinaryOperation::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    if ( !this->left->detectCycle ( pos, visited, stack, map ) )
-        return this->right->detectCycle ( pos, visited, stack, map );
+bool ASTBinaryOperation::detectCycle( std::set<CPos> & visited, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
+    if ( !this->left->detectCycle ( visited, map ) )
+        return this->right->detectCycle ( visited, map );
     return true;
 }
 
@@ -184,8 +184,8 @@ void ASTGreaterOrEqual::print(std::ostream& os) const {
 ASTUnaryOperation::ASTUnaryOperation ( std::unique_ptr<ASTNode> node): 
     node(std::move(node)) {}
 
-bool ASTUnaryOperation::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    return this->node->detectCycle ( pos, visited, stack, map );
+bool ASTUnaryOperation::detectCycle( std::set<CPos> & visited, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
+    return this->node->detectCycle ( visited, map );
 }    
 
 // NEGATIVE ---------------------------------------------------------------------
@@ -247,41 +247,38 @@ std::unique_ptr<ASTNode> ASTDoubleValue::copy( const std::pair<int, int> & delta
 
 // REFFERENCE -------------------------------------------------------------------
 
-ASTRefference::ASTRefference ( const CPos & pos ):
+ASTReference::ASTReference ( const CPos & pos ):
     pos ( pos ) {}
 
-CValue ASTRefference::evaluate( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
-    auto it = map.find( this->pos );
-    if ( it != map.end() )
-        return it->second->evaluate( map );
+CValue ASTReference::evaluate( const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const {
+    auto mapIt = map.find( this->pos );
+    if ( mapIt != map.end() )
+        return mapIt->second->evaluate( map );
     return std::monostate{};
 }
 
-void ASTRefference::print( std::ostream & os ) const {
+void ASTReference::print( std::ostream & os ) const {
     os << pos;
 }
 
-std::unique_ptr<ASTNode> ASTRefference::copy ( const std::pair<int, int> & delta ) const {
-    return std::make_unique<ASTRefference>( this->pos.copy( delta ) );
+std::unique_ptr<ASTNode> ASTReference::copy ( const std::pair<int, int> & delta ) const {
+    return std::make_unique<ASTReference>( this->pos.copy( delta ) );
 }
 
-bool ASTRefference::detectCycle( const CPos & pos, std::set<CPos> & visited, std::set<CPos> & stack, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const { 
-    visited . emplace ( pos );
-    stack . emplace ( pos );
+bool ASTReference::detectCycle( std::set<CPos> & visited, const std::map<CPos, std::unique_ptr<ASTNode>> & map ) const { 
+    auto visitedIt = visited . find ( this->pos );
+    if ( visitedIt != visited.end() )
+        return true;
 
-    auto mIt = map . find ( this->pos );
-    if ( mIt == map . end() )
+    auto mapIt = map . find ( this->pos );
+    if ( mapIt == map . end() )
         return false;
 
-    auto vIt = visited . find ( mIt->first );
-    auto sIt = stack . find ( mIt->first );
-        
-    if ( vIt == visited . end() && mIt->second->detectCycle( this->pos, visited, stack, map ) )
-        return true;
-    else if ( sIt != stack . end() )
+    visited.emplace( this->pos );
+    if ( mapIt->second->detectCycle( visited, map ) )
         return true;
 
-    stack . erase ( pos );
+    visited.erase( this->pos );
     return false;
 }
 

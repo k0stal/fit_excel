@@ -20,65 +20,63 @@ CSpreadsheet & CSpreadsheet::operator = ( const CSpreadsheet & arg ) {
     return *this;
 }
 
-bool CSpreadsheet::load ( std::istream & is ) {
+bool CSpreadsheet::load(std::istream & is) {
     map.clear();
-
     char c;
-    while ( !is.fail() ) {
-        std::string cell = ""; 
+    while (!is.fail()) {
+        std::string cell = "";
 
         is.get(c);
-        
-        if ( is.eof() )
+        if (is.eof())
             return true;
 
-        if ( is.fail() || (!std::isalpha(c) && c != '$'))
+        if (is.fail() || (!std::isalpha(c) && c != '$'))
             return false;
-
         cell += c;
-        
-        while (is.get(c) && std::isalpha(c) && !is.fail() && !is.eof() )
+
+        while (is.get(c) && std::isalpha(c) && !is.fail() && !is.eof())
             cell += c;
 
-        if ((!isdigit(c) && c != '$' ) || is.fail() || is.eof() )
+        if ((!isdigit(c) && c != '$') || is.fail() || is.eof())
             return false;
-
         cell += c;
 
-        while (is.get(c) && isdigit(c) && !is.fail() && !is.eof() )
+        while (is.get(c) && isdigit(c) && !is.fail() && !is.eof())
             cell += c;
 
         if (c == '$')
             cell += c;
-        else if ( c != '-' )
+        else if (c != '-')
             return false;
 
         std::string sizeStr;
         while (is.get(c) && isdigit(c))
             sizeStr += c;
-        
+
         if (c != '-')
             return false;
 
         int size = std::stoi(sizeStr);
         std::string value = "=";
         for (int i = 0; i < size; ++i) {
-            if ( is.fail() || !is.get(c) )
+            if (is.fail() || !is.get(c))
                 return false;
             value += c;
         }
 
-        if (!this->setCell(CPos(cell), value))
+        try {
+            CPos pos(cell);
+            if (!this->setCell(pos, value))
+                return false;
+        } catch (const std::exception &) {
             return false;
+        }
 
         if (is.eof())
             return true;
     }
 
-    if ( is.fail() )
-        return false;
-
-    return true;
+    return !is.fail();
 }
 
 bool CSpreadsheet::save ( std::ostream & os ) const {
@@ -118,9 +116,8 @@ bool CSpreadsheet::setCell ( CPos pos, std::string contents ) {
 CValue CSpreadsheet::getValue ( CPos pos ) {
     auto it = map.find(pos);
     if ( it != map.end() ) {
-        std::set<CPos> visited;
-        std::set<CPos> stack;
-        if ( it->second->detectCycle ( pos, visited, stack, this->map ) )
+        std::set<CPos> visited = { pos };
+        if ( it->second->detectCycle ( visited, this->map ) )
             return std::monostate{};
         return it->second->evaluate( map );
     }

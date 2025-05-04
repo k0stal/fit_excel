@@ -85,13 +85,6 @@ void rectIterationSize ( std::vector<CPos> & res, const CPos & start, int w, int
 
 }
 
-void rectIterationPos ( std::vector<CPos> & res, const CPos & start, const CPos & end ) {
-    int deltaX = abs(start.coo.first - start.coo.first);
-    int deltaY = abs(end.coo.second - end.coo.second);
-
-    return rectIterationSize ( res, start, deltaX, deltaY );
-}
-
 void CPos::getCellName (std::string & name) const {
     std::string col = "";
     int colNum = coo.first; 

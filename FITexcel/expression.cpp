@@ -99,7 +99,7 @@ void ASTBuilder::valReference(std::string val) {
     std::pair<bool, bool> fixation = extractFixation ( val, mod );
     CPos pos (mod);
     pos . addFixation ( fixation );
-    stack.push(std::make_unique<ASTRefference>(pos));
+    stack.push(std::make_unique<ASTReference>(pos));
 }
 
 bool ASTBuilder::getLast ( std::unique_ptr<ASTNode> & root ) {
